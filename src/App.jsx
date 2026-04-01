@@ -384,50 +384,50 @@ function GameScreen({ stickmanColor, playerName }) {
       const len = Math.hypot(dx, dy);
       if (len < 1) return;
 
-      const lineLen = Math.min(36, len);
-      const endX = muzzle.x + (dx / len) * lineLen;
-      const endY = muzzle.y + (dy / len) * lineLen;
+      const dirX = dx / len;
+      const dirY = dy / len;
 
-      ctx.strokeStyle = "rgba(0,0,0,0.35)";
-      ctx.lineWidth = 2;
+      // lunghezza dell'arco vicino allo stickman
+      const arcLen = Math.min(52, len * 0.42);
+
+      // punto finale dell'arco
+      const endX = muzzle.x + dirX * arcLen;
+      const endY = muzzle.y + dirY * arcLen;
+
+      // normale per incurvare l'arco
+      const normalX = -dirY;
+      const normalY = dirX;
+
+      // verso della curvatura: sopra rispetto al personaggio
+      const curveSide = state.facing >= 0 ? -1 : 1;
+      const curveAmount = Math.min(18, 8 + arcLen * 0.18);
+
+      // punto di controllo della Bezier
+      const ctrlX = (muzzle.x + endX) * 0.5 + normalX * curveAmount * curveSide;
+      const ctrlY = (muzzle.y + endY) * 0.5 + normalY * curveAmount * curveSide;
+
+      // arco principale
+      ctx.strokeStyle = "rgba(0,0,0,0.38)";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
       ctx.beginPath();
       ctx.moveTo(muzzle.x, muzzle.y);
-      ctx.lineTo(endX, endY);
+      ctx.quadraticCurveTo(ctrlX, ctrlY, endX, endY);
+      ctx.stroke();
+
+      // piccola punta finale stilizzata
+      const tipSize = 7;
+      const arrowAngle = Math.atan2(endY - ctrlY, endX - ctrlX);
+      const a1 = arrowAngle + Math.PI * 0.82;
+      const a2 = arrowAngle - Math.PI * 0.82;
+
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX + Math.cos(a1) * tipSize, endY + Math.sin(a1) * tipSize);
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX + Math.cos(a2) * tipSize, endY + Math.sin(a2) * tipSize);
       ctx.stroke();
     };
-
-    const drawUi = () => {
-      const barX = 20;
-      const barY = 20;
-      const barW = 220;
-      const barH = 22;
-      const fillW = (state.life / state.maxLife) * barW;
-      const seconds = Math.floor(timeRef.current / 60);
-
-      ctx.fillStyle = "rgba(0,0,0,0.08)";
-      ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(barX, barY, barW, barH);
-      ctx.fillStyle = "#22c55e";
-      ctx.fillRect(barX, barY, fillW, barH);
-      ctx.strokeStyle = "#222";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(barX, barY, barW, barH);
-
-      ctx.fillStyle = "#222";
-      ctx.font = "16px sans-serif";
-      ctx.fillText(playerName, 20, 60);
-      ctx.font = "14px sans-serif";
-      ctx.fillText("HP", barX + 8, barY + 16);
-      ctx.fillText(`Time: ${seconds}s`, 20, 84);
-      ctx.fillText("Comandi:", 20, 106);
-      ctx.fillText("A / D o ← / → = muovi", 20, 128);
-      ctx.fillText("Space / ↑ / W = salta", 20, 150);
-      ctx.fillText("Shift = corri", 20, 172);
-      ctx.fillText("Click sinistro = spara verso il mouse", 20, 194);
-      ctx.fillText(`Birds hit: ${scoreRef.current}`, 20, 216);
-    };
-
     const drawAngerOverlay = () => {
       ctx.fillStyle = "rgba(0,0,0,0.28)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -617,13 +617,40 @@ function GameScreen({ stickmanColor, playerName }) {
         k.run && Math.abs(state.vx) > 1
       );
 
-      ctx.fillStyle = "#111";
-      projectilesRef.current.forEach((p) => {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle);
-        ctx.fillRect(-p.width / 2, -p.height / 2, p.width, p.height);
-        ctx.restore();
+       ctx.fillStyle = "#111";
+ctx.strokeStyle = "#111";
+ctx.lineWidth = 2;
+
+  projectilesRef.current.forEach((p) => {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+
+    // corpo freccia (asta)
+    ctx.beginPath();
+    ctx.moveTo(-10, 0);
+    ctx.lineTo(6, 0);
+    ctx.stroke();
+
+    // punta freccia
+    ctx.beginPath();
+    ctx.moveTo(6, 0);
+    ctx.lineTo(2, -4);
+    ctx.lineTo(12, 0);
+    ctx.lineTo(2, 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // codina (piume stilizzate)
+    ctx.beginPath();
+    ctx.moveTo(-10, 0);
+    ctx.lineTo(-14, -3);
+    ctx.moveTo(-10, 0);
+    ctx.lineTo(-14, 3);
+    ctx.stroke();
+
+    ctx.restore();
+  });
       });
 
       drawUi();

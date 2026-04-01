@@ -405,34 +405,7 @@ function GameScreen({ stickmanColor, playerName }) {
       ctx.moveTo(-24, -32);
       ctx.lineTo(-24, 32);
       ctx.stroke();
-
-      // === FRECCIA (solo visiva, puntatore) ===
-      const arrowLen = Math.min(30, len * 0.5);
-
-      // asta
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-18, 0);
-      ctx.lineTo(arrowLen, 0);
-      ctx.stroke();
-
-      // punta
-      ctx.beginPath();
-      ctx.moveTo(arrowLen, 0);
-      ctx.lineTo(arrowLen - 8, -4);
-      ctx.lineTo(arrowLen - 8, 4);
-      ctx.closePath();
-      ctx.fillStyle = "#222";
-      ctx.fill();
-
-      // piume dietro
-      ctx.beginPath();
-      ctx.moveTo(-18, 0);
-      ctx.lineTo(-24, -4);
-      ctx.moveTo(-18, 0);
-      ctx.lineTo(-24, 4);
-      ctx.stroke();
-
+      
       ctx.restore();
   };
 

@@ -384,49 +384,56 @@ function GameScreen({ stickmanColor, playerName }) {
       const len = Math.hypot(dx, dy);
       if (len < 1) return;
 
-      const dirX = dx / len;
-      const dirY = dy / len;
+      const angle = Math.atan2(dy, dx);
 
-      // lunghezza dell'arco vicino allo stickman
-      const arcLen = Math.min(52, len * 0.42);
+      ctx.save();
+      ctx.translate(muzzle.x, muzzle.y);
+      ctx.rotate(angle);
 
-      // punto finale dell'arco
-      const endX = muzzle.x + dirX * arcLen;
-      const endY = muzzle.y + dirY * arcLen;
-
-      // normale per incurvare l'arco
-      const normalX = -dirY;
-      const normalY = dirX;
-
-      // verso della curvatura: sopra rispetto al personaggio
-      const curveSide = state.facing >= 0 ? -1 : 1;
-      const curveAmount = Math.min(18, 8 + arcLen * 0.18);
-
-      // punto di controllo della Bezier
-      const ctrlX = (muzzle.x + endX) * 0.5 + normalX * curveAmount * curveSide;
-      const ctrlY = (muzzle.y + endY) * 0.5 + normalY * curveAmount * curveSide;
-
-      // arco principale
-      ctx.strokeStyle = "rgba(0,0,0,0.38)";
+      // === ARCO (curva stile bow) ===
+      ctx.strokeStyle = "#222";
       ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(muzzle.x, muzzle.y);
-      ctx.quadraticCurveTo(ctrlX, ctrlY, endX, endY);
-      ctx.stroke();
-
-      // piccola punta finale stilizzata
-      const tipSize = 7;
-      const arrowAngle = Math.atan2(endY - ctrlY, endX - ctrlX);
-      const a1 = arrowAngle + Math.PI * 0.82;
-      const a2 = arrowAngle - Math.PI * 0.82;
 
       ctx.beginPath();
-      ctx.moveTo(endX, endY);
-      ctx.lineTo(endX + Math.cos(a1) * tipSize, endY + Math.sin(a1) * tipSize);
-      ctx.moveTo(endX, endY);
-      ctx.lineTo(endX + Math.cos(a2) * tipSize, endY + Math.sin(a2) * tipSize);
+      ctx.moveTo(-18, -24);
+      ctx.quadraticCurveTo(-6, 0, -18, 24);
       ctx.stroke();
+
+      // === CORDA ===
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-18, -24);
+      ctx.lineTo(-18, 24);
+      ctx.stroke();
+
+      // === FRECCIA (solo visiva, puntatore) ===
+      const arrowLen = Math.min(50, len * 0.5);
+
+      // asta
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-18, 0);
+      ctx.lineTo(arrowLen, 0);
+      ctx.stroke();
+
+      // punta
+      ctx.beginPath();
+      ctx.moveTo(arrowLen, 0);
+      ctx.lineTo(arrowLen - 8, -4);
+      ctx.lineTo(arrowLen - 8, 4);
+      ctx.closePath();
+      ctx.fillStyle = "#222";
+      ctx.fill();
+
+      // piume dietro
+      ctx.beginPath();
+      ctx.moveTo(-18, 0);
+      ctx.lineTo(-24, -4);
+      ctx.moveTo(-18, 0);
+      ctx.lineTo(-24, 4);
+      ctx.stroke();
+
+      ctx.restore();
   };
 
     const drawUi = () => {

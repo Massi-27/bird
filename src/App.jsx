@@ -377,7 +377,35 @@ function GameScreen({ stickmanColor, playerName }) {
       ctx.stroke();
     };
 
-    
+    const drawAimLine = () => {
+  const muzzle = getMuzzle();
+  const dx = mouseRef.current.x - muzzle.x;
+  const dy = mouseRef.current.y - muzzle.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 1) return;
+
+  const lineLen = Math.min(42, len);
+  const endX = muzzle.x + (dx / len) * lineLen;
+  const endY = muzzle.y + (dy / len) * lineLen;
+
+  ctx.strokeStyle = stickmanColor;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(muzzle.x, muzzle.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+
+  const angle = Math.atan2(dy, dx);
+  const tip = 8;
+
+  ctx.beginPath();
+  ctx.moveTo(endX, endY);
+  ctx.lineTo(endX - Math.cos(angle - Math.PI / 6) * tip, endY - Math.sin(angle - Math.PI / 6) * tip);
+  ctx.moveTo(endX, endY);
+  ctx.lineTo(endX - Math.cos(angle + Math.PI / 6) * tip, endY - Math.sin(angle + Math.PI / 6) * tip);
+  ctx.stroke();
+};
 
     const drawUi = () => {
       const barX = 20;
@@ -600,40 +628,37 @@ function GameScreen({ stickmanColor, playerName }) {
         k.run && Math.abs(state.vx) > 1
       );
 
-  ctx.fillStyle = "#111";
-  ctx.strokeStyle = "#111";
-  ctx.lineWidth = 2;
+  ctx.fillStyle = stickmanColor;
+ctx.strokeStyle = stickmanColor;
+ctx.lineWidth = 2;
 
-  projectilesRef.current.forEach((p) => {
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.angle);
+projectilesRef.current.forEach((p) => {
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.angle);
 
-    // corpo freccia (asta)
-    ctx.beginPath();
-    ctx.moveTo(-10, 0);
-    ctx.lineTo(6, 0);
-    ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-10, 0);
+  ctx.lineTo(6, 0);
+  ctx.stroke();
 
-    // punta freccia
-    ctx.beginPath();
-    ctx.moveTo(6, 0);
-    ctx.lineTo(2, -4);
-    ctx.lineTo(12, 0);
-    ctx.lineTo(2, 4);
-    ctx.closePath();
-    ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(6, 0);
+  ctx.lineTo(2, -4);
+  ctx.lineTo(12, 0);
+  ctx.lineTo(2, 4);
+  ctx.closePath();
+  ctx.fill();
 
-    // codina (piume stilizzate)
-    ctx.beginPath();
-    ctx.moveTo(-10, 0);
-    ctx.lineTo(-14, -3);
-    ctx.moveTo(-10, 0);
-    ctx.lineTo(-14, 3);
-    ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-10, 0);
+  ctx.lineTo(-14, -3);
+  ctx.moveTo(-10, 0);
+  ctx.lineTo(-14, 3);
+  ctx.stroke();
 
-    ctx.restore();
-  });
+  ctx.restore();
+});
 
       drawUi();
       if (pausedRef.current) drawAngerOverlay();

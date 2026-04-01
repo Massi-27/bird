@@ -80,10 +80,20 @@ export default function StickmanWebApp() {
     );
   }
 
-  return <GameScreen stickmanColor={selectedColor} playerName={name} />;
+    return (
+    <GameScreen
+      stickmanColor={selectedColor}
+      playerName={name}
+      onBackToMenu={() => {
+        setReady(false);
+        setSelectedColor(null);
+        setName("");
+      }}
+    />
+  );
 }
 
-function GameScreen({ stickmanColor, playerName }) {
+function GameScreen({ stickmanColor, playerName, onBackToMenu }) {
   const canvasRef = useRef(null);
   const keysRef = useRef({ left: false, right: false, jump: false, run: false });
   const stateRef = useRef(null);
@@ -93,6 +103,7 @@ function GameScreen({ stickmanColor, playerName }) {
   const scoreRef = useRef(0);
   const fireCooldownRef = useRef(0);
   const birdSpawnTimerRef = useRef(50);
+  const gameOverRef = useRef(false);
 
   const timeRef = useRef(0);
   const pausedRef = useRef(false);
@@ -158,6 +169,7 @@ function GameScreen({ stickmanColor, playerName }) {
         width: 16,
         height: 6,
         angle: Math.atan2(dy, dx),
+        returning: false,
       });
     };
 
@@ -218,6 +230,13 @@ function GameScreen({ stickmanColor, playerName }) {
     };
 
     const keyDown = (e) => {
+      if (gameOverRef.current) {
+        if (e.key === "Enter") {
+          onBackToMenu();
+        }
+        return;
+      }
+
       if (pausedRef.current) {
         if (e.key === "Enter") {
           pausedRef.current = false;
@@ -464,12 +483,51 @@ function GameScreen({ stickmanColor, playerName }) {
       ctx.textAlign = "start";
     };
 
+    const drawGameOverOverlay = () => {
+      ctx.fillStyle = "rgba(0,0,0,0.35)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const boxW = Math.min(620, canvas.width - 80);
+      const boxH = 180;
+      const x = (canvas.width - boxW) / 2;
+      const y = (canvas.height - boxH) / 2;
+
+      ctx.fillStyle = "#f3f4f6";
+      ctx.fillRect(x, y, boxW, boxH);
+
+      ctx.strokeStyle = "#9ca3af";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, boxW, boxH);
+
+      ctx.fillStyle = "#111";
+      ctx.textAlign = "center";
+      ctx.font = "bold 34px sans-serif";
+      ctx.fillText("WHAT YOU DOING???", canvas.width / 2, y + 78);
+      ctx.font = "20px sans-serif";
+      ctx.fillText("Press Enter to return to character selection", canvas.width / 2, y + 128);
+      ctx.textAlign = "start";
+    };
+
+    const hitsStickman = (p) => {
+      const bodyLeft = state.x - 18;
+      const bodyRight = state.x + 18;
+      const bodyTop = state.y - 86;
+      const bodyBottom = state.y;
+
+      return (
+        p.x >= bodyLeft &&
+        p.x <= bodyRight &&
+        p.y >= bodyTop &&
+        p.y <= bodyBottom
+      );
+  };
+
     let raf;
     const loop = () => {
       const k = keysRef.current;
       const groundY = getGroundY();
 
-      if (!pausedRef.current) {
+      if (!pausedRef.current && !gameOverRef.current) {
         timeRef.current += 1;
 
         const halfWidth = 20;
@@ -528,8 +586,41 @@ function GameScreen({ stickmanColor, playerName }) {
         }
 
         projectilesRef.current = projectilesRef.current
-          .map((p) => ({ ...p, x: p.x + p.vx, y: p.y + p.vy }))
-          .filter((p) => p.x > -60 && p.x < canvas.width + 60 && p.y > -60 && p.y < canvas.height + 60);
+          .map((p) => {
+        let nextX = p.x + p.vx;
+        let nextY = p.y + p.vy;
+        let nextVX = p.vx;
+        let nextVY = p.vy;
+        let returning = p.returning;
+
+        // Se colpisce il terreno per la prima volta, inverte esattamente il percorso
+        if (!returning && nextY >= groundY) {
+          returning = true;
+          nextVX = -p.vx;
+          nextVY = -p.vy;
+          nextX = p.x + nextVX;
+          nextY = p.y + nextVY;
+        }
+
+        const updated = {
+          ...p,
+          x: nextX,
+          y: nextY,
+          vx: nextVX,
+          vy: nextVY,
+          angle: Math.atan2(nextVY, nextVX),
+          returning,
+        };
+
+        // Se tornando indietro colpisce lo stickman -> morte immediata
+        if (!gameOverRef.current && updated.returning && hitsStickman(updated)) {
+          state.life = 0;
+          gameOverRef.current = true;
+        }
+
+        return updated;
+  })
+  .filter((p) => p.x > -60 && p.x < canvas.width + 60 && p.y > -60 && p.y < canvas.height + 60);
 
         birdsRef.current = birdsRef.current
           .map((b) => {
@@ -662,6 +753,7 @@ projectilesRef.current.forEach((p) => {
 
       drawUi();
       if (pausedRef.current) drawAngerOverlay();
+      if (gameOverRef.current) drawGameOverOverlay();
 
       raf = requestAnimationFrame(loop);
     };

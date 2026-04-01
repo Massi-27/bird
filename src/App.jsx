@@ -377,37 +377,7 @@ function GameScreen({ stickmanColor, playerName }) {
       ctx.stroke();
     };
 
-    const drawAimLine = () => {
-      const muzzle = getMuzzle();
-      const dx = mouseRef.current.x - muzzle.x;
-      const dy = mouseRef.current.y - muzzle.y;
-      const len = Math.hypot(dx, dy);
-      if (len < 1) return;
-
-      const angle = Math.atan2(dy, dx);
-
-      ctx.save();
-      ctx.translate(muzzle.x, muzzle.y);
-      ctx.rotate(angle);
-
-      // === ARCO (curva stile bow) ===
-      ctx.strokeStyle = "#222";
-      ctx.lineWidth = 3;
-
-      ctx.beginPath();
-      ctx.moveTo(-24, -32);
-      ctx.quadraticCurveTo(-8, 0, -24, 32);
-      ctx.stroke();
-
-      // === CORDA ===
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-24, -32);
-      ctx.lineTo(-24, 32);
-      ctx.stroke();
-      
-      ctx.restore();
-  };
+    
 
     const drawUi = () => {
       const barX = 20;

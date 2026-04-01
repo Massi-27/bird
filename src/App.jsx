@@ -427,7 +427,40 @@ function GameScreen({ stickmanColor, playerName }) {
       ctx.moveTo(endX, endY);
       ctx.lineTo(endX + Math.cos(a2) * tipSize, endY + Math.sin(a2) * tipSize);
       ctx.stroke();
+  };
+
+    const drawUi = () => {
+      const barX = 20;
+      const barY = 20;
+      const barW = 220;
+      const barH = 22;
+      const fillW = (state.life / state.maxLife) * barW;
+      const seconds = Math.floor(timeRef.current / 60);
+
+      ctx.fillStyle = "rgba(0,0,0,0.08)";
+      ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(barX, barY, barW, barH);
+      ctx.fillStyle = "#22c55e";
+      ctx.fillRect(barX, barY, fillW, barH);
+      ctx.strokeStyle = "#222";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(barX, barY, barW, barH);
+
+      ctx.fillStyle = "#222";
+      ctx.font = "16px sans-serif";
+      ctx.fillText(playerName, 20, 60);
+      ctx.font = "14px sans-serif";
+      ctx.fillText("HP", barX + 8, barY + 16);
+      ctx.fillText(`Time: ${seconds}s`, 20, 84);
+      ctx.fillText("Comandi:", 20, 106);
+      ctx.fillText("A / D o ← / → = muovi", 20, 128);
+      ctx.fillText("Space / ↑ / W = salta", 20, 150);
+      ctx.fillText("Shift = corri", 20, 172);
+      ctx.fillText("Click sinistro = spara verso il mouse", 20, 194);
+      ctx.fillText(`Birds hit: ${scoreRef.current}`, 20, 216);
     };
+
     const drawAngerOverlay = () => {
       ctx.fillStyle = "rgba(0,0,0,0.28)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -617,9 +650,9 @@ function GameScreen({ stickmanColor, playerName }) {
         k.run && Math.abs(state.vx) > 1
       );
 
-       ctx.fillStyle = "#111";
-ctx.strokeStyle = "#111";
-ctx.lineWidth = 2;
+  ctx.fillStyle = "#111";
+  ctx.strokeStyle = "#111";
+  ctx.lineWidth = 2;
 
   projectilesRef.current.forEach((p) => {
     ctx.save();
@@ -651,7 +684,6 @@ ctx.lineWidth = 2;
 
     ctx.restore();
   });
-      });
 
       drawUi();
       if (pausedRef.current) drawAngerOverlay();

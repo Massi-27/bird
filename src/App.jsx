@@ -395,19 +395,19 @@ function GameScreen({ stickmanColor, playerName }) {
       ctx.lineWidth = 3;
 
       ctx.beginPath();
-      ctx.moveTo(-18, -24);
-      ctx.quadraticCurveTo(-6, 0, -18, 24);
+      ctx.moveTo(-24, -32);
+      ctx.quadraticCurveTo(-8, 0, -24, 32);
       ctx.stroke();
 
       // === CORDA ===
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(-18, -24);
-      ctx.lineTo(-18, 24);
+      ctx.moveTo(-24, -32);
+      ctx.lineTo(-24, 32);
       ctx.stroke();
 
       // === FRECCIA (solo visiva, puntatore) ===
-      const arrowLen = Math.min(50, len * 0.5);
+      const arrowLen = Math.min(30, len * 0.5);
 
       // asta
       ctx.lineWidth = 2;
